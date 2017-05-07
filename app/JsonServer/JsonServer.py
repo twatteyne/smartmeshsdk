@@ -36,19 +36,16 @@ pp = pprint.PrettyPrinter(indent=4)
 
 class JsonServer(object):
     
-    def __init__(self, tcpport, serialport, notifprefix, configfilename):
+    def __init__(self, tcpport, serialport, configfilename):
         
         # store params
         self.tcpport              = tcpport
         self.serialport           = serialport
-        self.notifprefix          = notifprefix
         self.configfilename       = configfilename
         
         # local variables
         self.jsonManager          = JsonManager.JsonManager(
-            tcpport               = tcpport,
             serialport            = serialport,
-            notifprefix           = notifprefix,
             configfilename        = configfilename,
             notifCb               = self._notif_cb,
         )
@@ -434,7 +431,6 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--tcpport',        default=8080)
     parser.add_argument('--serialport',     default=None)
-    parser.add_argument('--notifprefix',    default='')
     parser.add_argument('--configfilename', default='JsonServer.config')
     args = vars(parser.parse_args())
     main(args)

@@ -191,12 +191,10 @@ class JsonManager(object):
     
     OAP_TIMEOUT = 30.000
     
-    def __init__(self, tcpport, serialport, notifprefix, configfilename, notifCb):
+    def __init__(self, serialport, configfilename, notifCb):
         
         # store params
-        self.tcpport              = tcpport
         self.serialport           = serialport
-        self.notifprefix          = notifprefix
         self.configfilename       = configfilename
         self.notifCb              = notifCb
         
@@ -661,8 +659,6 @@ class JsonManager(object):
                     managers = [self.serialport]
                 else:
                     managers = []
-                if self.notifprefix:
-                    raise NotImplementedError()
                 self.config     = {
                     'managers':         managers,
                     'notification_urls': {
