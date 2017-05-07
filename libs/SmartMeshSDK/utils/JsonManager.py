@@ -18,7 +18,6 @@ if os.name=='nt':       # Windows
 elif os.name=='posix':  # Linux
    import glob
 
-import requests
 import json
 
 from SmartMeshSDK                      import sdk_version
@@ -31,7 +30,6 @@ from SmartMeshSDK.protocols.Hr         import HrParser
 from SmartMeshSDK.protocols.oap        import OAPDispatcher, \
                                               OAPClient,     \
                                               OAPMessage,    \
-                                              OAPNotif,      \
                                               OAPDefines as oapdefs
 
 #============================ helpers =========================================
@@ -193,13 +191,14 @@ class JsonManager(object):
     
     OAP_TIMEOUT = 30.000
     
-    def __init__(self, tcpport, serialport, notifprefix, configfilename):
+    def __init__(self, tcpport, serialport, notifprefix, configfilename, notifCb):
         
         # store params
         self.tcpport              = tcpport
         self.serialport           = serialport
         self.notifprefix          = notifprefix
         self.configfilename       = configfilename
+        self.notifCb              = notifCb
         
         # local variables
         self.startTime            = time.time()
@@ -708,7 +707,7 @@ class JsonManager(object):
         elif notifName==IpMgrSubscribe.IpMgrSubscribe.NOTIFHEALTHREPORT:
             hr  = self.hrParser.parseHr(notif.payload)
             # POST HR to some URL
-            self._send_notif(
+            self.notifCb(
                 notifname    = 'hr',
                 jsonToSend   = {
                             'name':    'hr',
@@ -723,7 +722,7 @@ class JsonManager(object):
         else:
             nm           = notifName
         fields = self._stringifyMacAddresses(notif._asdict())
-        self._send_notif(
+        self.notifCb(
             notifname    = nm,
             jsonToSend   = {
                 'manager': manager,
@@ -741,7 +740,7 @@ class JsonManager(object):
         
         # POST OAP notification to some URLs
         fields = self._stringifyMacAddresses(notif._asdict())
-        self._send_notif(
+        self.notifCb(
             notifname    = 'oap',
             jsonToSend   = {
                 'name':    'oap',
@@ -749,37 +748,6 @@ class JsonManager(object):
                 'fields':  fields,
             },
         )
-    
-    def _send_notif(self,notifname,jsonToSend):
-        # find notification URLs
-        with self.dataLock:
-            urls = self.config['notification_urls'][notifname]
-        
-        # send notifications
-        if urls:
-            for url in urls:
-                notifthread = threading.Thread(
-                    target = self._send_notif_thread,
-                    args = (
-                        url,
-                    ),
-                    kwargs = {
-                        'data'        : json.dumps(jsonToSend),
-                        'headers'     : {
-                            'Content-type': 'application/json',
-                        },
-                    }
-                )
-                notifthread.name = '{0}->{1}'.format(notifname,url)
-                notifthread.start()
-    
-    def _send_notif_thread(self,*args,**kwargs):
-        try:
-            requests.post(*args,**kwargs)
-        except requests.exceptions.ConnectionError:
-            pass
-        except Exception as err:
-            print err
     
     #=== formatting
     

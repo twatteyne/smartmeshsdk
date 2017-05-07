@@ -20,12 +20,13 @@ import threading
 import json
 import traceback
 
+import requests
 import bottle
-from bottle import hook
+from bottle                  import hook
 
-from SmartMeshSDK                      import sdk_version
-from SmartMeshSDK.utils                import JsonManager
-from dustCli      import DustCli
+from SmartMeshSDK            import sdk_version
+from SmartMeshSDK.utils      import JsonManager
+from dustCli                 import DustCli
 
 #============================ helpers =========================================
 
@@ -44,7 +45,13 @@ class JsonServer(object):
         self.configfilename       = configfilename
         
         # local variables
-        self.jsonManager          = JsonManager.JsonManager(tcpport, serialport, notifprefix, configfilename)
+        self.jsonManager          = JsonManager.JsonManager(
+            tcpport               = tcpport,
+            serialport            = serialport,
+            notifprefix           = notifprefix,
+            configfilename        = configfilename,
+            notifCb               = self._notif_cb,
+        )
         
         #=== CLI interface
         
@@ -384,6 +391,39 @@ class JsonServer(object):
             }
         bottle.response.content_type = 'application/json'
         return json.dumps(error_data)
+    
+    #=== notifications
+    
+    def _notif_cb(self,notifname,jsonToSend):
+        
+        # find notification URLs
+        urls = self.jsonManager.config_GET()['notification_urls'][notifname]
+        
+        # send notifications
+        if urls:
+            for url in urls:
+                notifthread = threading.Thread(
+                    target = self._send_notif_thread,
+                    args = (
+                        url,
+                    ),
+                    kwargs = {
+                        'data'        : json.dumps(jsonToSend),
+                        'headers'     : {
+                            'Content-type': 'application/json',
+                        },
+                    }
+                )
+                notifthread.name = '{0}->{1}'.format(notifname,url)
+                notifthread.start()
+    
+    def _send_notif_thread(self,*args,**kwargs):
+        try:
+            requests.post(*args,**kwargs)
+        except requests.exceptions.ConnectionError:
+            pass
+        except Exception as err:
+            print err
     
 #============================ main ============================================
 
