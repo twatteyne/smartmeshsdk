@@ -69,3 +69,10 @@ def formatTimestamp(timestamp=None):
         time.strftime(LOG_FORMAT_TIMESTAMP,time.localtime(timestamp)),
         int((timestamp*1000)%1000)
     )
+
+def format_mac_string_to_bytes(mac_string):
+    '''
+    "00-11-22-33-44-55-66-77" -> [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77]
+    '''
+    return [int(b,16) for b in mac_string.split('-')]
+    
