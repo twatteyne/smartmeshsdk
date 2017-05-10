@@ -222,9 +222,9 @@ class JsonManager(object):
             'SmartMesh SDK version': '.'.join([str(b) for b in sdk_version.VERSION]),
             'current time':          self._formatTime(),
             'running since':         '{0} ({1} ago)'.format(
-                    self._formatTime(self.startTime),
-                    datetime.timedelta(seconds=time.time()-self.startTime)
-                ),
+                self._formatTime(self.startTime),
+                datetime.timedelta(seconds=time.time()-self.startTime)
+            ),
             'threads running':       [t.getName() for t in threading.enumerate()],
             'managers':              self._formatManagersStatus(),
         }
