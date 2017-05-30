@@ -708,12 +708,12 @@ class JsonManager(object):
             hr  = self.hrParser.parseHr(notif.payload)
             # POST HR to some URL
             self.notifCb(
-                notifname    = 'hr',
-                jsonToSend   = {
-                            'name':    'hr',
-                            'mac':     u.formatMacString(notif.macAddress),
-                            'hr':      hr,
-                        },
+                notifName    = 'hr',
+                notifJson    = {
+                    'name':    'hr',
+                    'mac':     u.formatMacString(notif.macAddress),
+                    'hr':      hr,
+                },
             )
         
         # POST raw notification to some URL
@@ -723,8 +723,8 @@ class JsonManager(object):
             nm           = notifName
         fields = self._stringifyMacAddresses(notif._asdict())
         self.notifCb(
-            notifname    = nm,
-            jsonToSend   = {
+            notifName    = nm,
+            notifJson    = {
                 'manager': manager,
                 'name':    notifName,
                 'fields':  fields,
@@ -741,8 +741,8 @@ class JsonManager(object):
         # POST OAP notification to some URLs
         fields = self._stringifyMacAddresses(notif._asdict())
         self.notifCb(
-            notifname    = 'oap',
-            jsonToSend   = {
+            notifName    = 'oap',
+            notifJson    = {
                 'name':    'oap',
                 'mac':     macString,
                 'fields':  fields,
