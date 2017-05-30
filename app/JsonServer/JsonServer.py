@@ -391,10 +391,10 @@ class JsonServer(object):
     
     #=== notifications
     
-    def _notif_cb(self,notifname,jsonToSend):
+    def _notif_cb(self,notifName,notifJson):
         
         # find notification URLs
-        urls = self.jsonManager.config_GET()['notification_urls'][notifname]
+        urls = self.jsonManager.config_GET()['notification_urls'][notifName]
         
         # send notifications
         if urls:
@@ -405,13 +405,13 @@ class JsonServer(object):
                         url,
                     ),
                     kwargs = {
-                        'data'        : json.dumps(jsonToSend),
+                        'data'        : json.dumps(notifJson),
                         'headers'     : {
                             'Content-type': 'application/json',
                         },
                     }
                 )
-                notifthread.name = '{0}->{1}'.format(notifname,url)
+                notifthread.name = '{0}->{1}'.format(notifName,url)
                 notifthread.start()
     
     def _send_notif_thread(self,*args,**kwargs):
