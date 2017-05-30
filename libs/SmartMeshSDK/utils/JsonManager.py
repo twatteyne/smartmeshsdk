@@ -191,12 +191,12 @@ class JsonManager(object):
     
     OAP_TIMEOUT = 30.000
     
-    def __init__(self, serialport, configfilename, notifCb):
+    def __init__(self, serialport, notifCb, configfilename=None):
         
         # store params
         self.serialport           = serialport
-        self.configfilename       = configfilename
         self.notifCb              = notifCb
+        self.configfilename       = configfilename
         
         # local variables
         self.startTime            = time.time()
@@ -653,7 +653,10 @@ class JsonManager(object):
     def _loadConfig(self):
         with self.dataLock:
             try:
-                self.config = pickle.load(open(self.configfilename,"rb"))
+                if self.configfilename:
+                    self.config = pickle.load(open(self.configfilename,"rb"))
+                else:
+                   raise IOError
             except IOError as err:
                 if self.serialport:
                     managers = [self.serialport]
@@ -689,8 +692,9 @@ class JsonManager(object):
                 self._saveConfig()
     
     def _saveConfig(self):
-        with self.dataLock:
-            pickle.dump(self.config, open(self.configfilename,"wb"))
+        if self.configfilename:
+            with self.dataLock:
+                pickle.dump(self.config, open(self.configfilename,"wb"))
     
     #=== notifications
     
